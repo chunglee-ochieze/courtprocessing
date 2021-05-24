@@ -1,0 +1,44 @@
+﻿@page "/fetchdata"
+
+@using CourtProcessing.Data
+@inject Viewer _viewer
+
+<h1>Uploaded Files</h1>
+
+<p>This component demonstrates fetching list of successfully uploaded files/folders.</p>
+
+@if (_items == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Folder</th>
+                <th>Date</th>
+                <th>Files</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in _items)
+            {
+                <tr>
+                    <td>@item.FolderName</td>
+                    <td>@item.FolderDate.ToString("s")</td>
+                    <td>@item.FileNames</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<UploadedFiles> _items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = _viewer.ViewUploads().OrderByDescending(d => d.FolderDate).ToList();
+    }
+}

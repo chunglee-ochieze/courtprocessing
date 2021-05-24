@@ -1,0 +1,27 @@
+﻿@page "/counter"
+@using CourtProcessing.Data
+@using System.IO.Compression
+@inject Uploader _uploader;
+
+<h1>File Upload</h1>
+
+<InputFile OnChange="@UploadFile" accept=".zip"/><br/>
+
+@if (string.IsNullOrEmpty(_result))
+{
+    <p><em>Not uploaded</em></p>
+}
+else
+{
+    <p><em>@_result</em></p>
+}
+
+
+@code {
+    private string _result = string.Empty;
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        _result = await _uploader.UploadZip(e.File);
+    }
+}
