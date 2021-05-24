@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,15 +13,15 @@ namespace CourtProcessing.Data
 {
     public class Validator
     {
-        private readonly ILogger<Program> _logger;
+        private readonly IConfiguration _config;
 
         public Validator()
         {
         }
 
-        public Validator(ILogger<Program> logger)
+        public Validator(IConfiguration config)
         {
-            _logger = logger;
+            _config = config;
         }
 
         public bool ValidateXmlWithSchema(string xmlPath, string xsdPath)
@@ -37,7 +39,7 @@ namespace CourtProcessing.Data
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
+                LogHandler.WriteLog(ex.Message, LogEventLevel.Error, _config);
                 return false;
             }
         }
@@ -50,7 +52,7 @@ namespace CourtProcessing.Data
             if (type != XmlSeverityType.Error)
                 return;
 
-            _logger.LogError(null, e.Message);
+            LogHandler.WriteLog(e.Message, LogEventLevel.Error, _config);
             throw new Exception(e.Message);
         }
     }

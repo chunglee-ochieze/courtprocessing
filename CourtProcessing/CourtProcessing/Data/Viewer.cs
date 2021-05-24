@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,16 +12,14 @@ namespace CourtProcessing.Data
     public class Viewer
     {
         private readonly IConfiguration _config;
-        private readonly ILogger<Program> _logger;
 
         public Viewer()
         {
         }
 
-        public Viewer(IConfiguration config, ILogger<Program> logger)
+        public Viewer(IConfiguration config)
         {
             _config = config;
-            _logger = logger;
         }
 
         public List<UploadedFiles> ViewUploads()
@@ -44,7 +43,7 @@ namespace CourtProcessing.Data
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, ex.Message);
+                LogHandler.WriteLog(ex.Message, LogEventLevel.Fatal, _config);
             }
 
             return filesList;

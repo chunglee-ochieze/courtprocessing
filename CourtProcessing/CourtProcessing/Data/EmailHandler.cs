@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,16 +12,14 @@ namespace CourtProcessing.Data
     public class EmailHandler
     {
         private readonly IConfiguration _config;
-        private readonly ILogger<Program> _logger;
 
         public EmailHandler()
         {
         }
 
-        public EmailHandler(IConfiguration config, ILogger<Program> logger)
+        public EmailHandler(IConfiguration config)
         {
             _config = config;
-            _logger = logger;
         }
 
         public void NotifyAdmin(NotifyAdmin notify)
@@ -39,13 +38,13 @@ namespace CourtProcessing.Data
                 });
 
                 if (sent)
-                    _logger.LogInformation("Email sent to Admin.");
+                    LogHandler.WriteLog("Email sent to Admin.", LogEventLevel.Information, _config);
                 else
-                    _logger.LogWarning("Email not sent to Admin.");
+                    LogHandler.WriteLog("Email not sent to Admin.", LogEventLevel.Warning, _config);
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, ex.Message);
+                LogHandler.WriteLog(ex.Message, LogEventLevel.Fatal, _config);
             }
         }
 
@@ -103,7 +102,7 @@ namespace CourtProcessing.Data
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, ex.Message);
+                LogHandler.WriteLog(ex.Message, LogEventLevel.Fatal, _config);
             }
 
             return res;

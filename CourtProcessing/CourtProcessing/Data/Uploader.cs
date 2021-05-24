@@ -10,22 +10,21 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Serilog.Events;
 
 namespace CourtProcessing.Data
 {
     public class Uploader
     {
         private readonly IConfiguration _config;
-        private readonly ILogger<Program> _logger;
 
         public Uploader()
         {
         }
 
-        public Uploader(IConfiguration config, ILogger<Program> logger)
+        public Uploader(IConfiguration config)
         {
             _config = config;
-            _logger = logger;
         }
 
         public async Task<string> UploadZip(IBrowserFile file)
@@ -65,7 +64,7 @@ namespace CourtProcessing.Data
 
                             if (xmlFile is not null or "")
                             {
-                                if (new Validator(_logger).ValidateXmlWithSchema(xmlFile, _config["XmlSchemaPath"]))
+                                if (new Validator(_config).ValidateXmlWithSchema(xmlFile, _config["XmlSchemaPath"]))
                                 {
                                     using StreamReader sr = new(xmlFile);
                                     var xElement = XElement.Parse(await sr.ReadToEndAsync());
@@ -92,13 +91,15 @@ namespace CourtProcessing.Data
                                     if (unzippedFiles.Count == Directory.EnumerateFiles(permPath).Count())
                                     {
                                         response = "Success.";
-                                        new EmailHandler(_config, _logger).NotifyAdmin(new NotifyAdmin
+                                        new EmailHandler(_config).NotifyAdmin(new NotifyAdmin
                                         {
                                             FileExtracted = true,
                                             FolderName = permPath,
                                             UploaderApplicationNo = applicationNo,
                                             UploaderName = name
                                         });
+
+                                        LogHandler.WriteLog($"Upload process completed successufully for Application No: {applicationNo}", LogEventLevel.Information, _config);
                                     }
                                     else
                                         response = "Files not extracted and copied completely. Please try again.";
@@ -124,18 +125,18 @@ namespace CourtProcessing.Data
             }
             catch (IOException io)
             {
-                _logger.LogCritical(io, io.Message);
+                LogHandler.WriteLog(io.Message, LogEventLevel.Fatal, _config);
                 response = $"Unable to work on file: {file.Name}.";
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, ex.Message);
+                LogHandler.WriteLog(ex.Message, LogEventLevel.Fatal, _config);
                 response = $"Error while operating file: {file.Name}.";
             }
 
             if (response is not "Success.")
             {
-                new EmailHandler(_config, _logger).NotifyAdmin(new NotifyAdmin
+                new EmailHandler(_config).NotifyAdmin(new NotifyAdmin
                 {
                     FileExtracted = false
                 });
