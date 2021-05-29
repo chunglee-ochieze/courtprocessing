@@ -99,7 +99,7 @@ namespace CourtProcessing.Data
                                             UploaderName = name
                                         });
 
-                                        LogHandler.WriteLog($"Upload process completed successufully for Application No: {applicationNo}", LogEventLevel.Information, _config);
+                                        LogHandler.WriteLog($"Upload process completed successfully for Application No: {applicationNo}", LogEventLevel.Information, _config);
                                     }
                                     else
                                         response = "Files not extracted and copied completely. Please try again.";

@@ -14,46 +14,46 @@ namespace CourtProcessing.Data
 {
     public static class LogHandler
     {
-        public static void WriteLog(string mssg, LogEventLevel logType, IConfiguration _config, [CallerMemberName] string cmn = null)
+        public static void WriteLog(string message, LogEventLevel logType, IConfiguration config, [CallerMemberName] string cmn = null)
         {
             try
             {
-                var path = Path.Combine(_config["Logging:Path"], $"Log_{logType}\\{logType.ToString().ToUpper()}-{DateTime.Now:yy-MM-dd}.txt");
+                var path = Path.Combine(config["Logging:Path"], $"Log_{logType}\\{logType.ToString().ToUpper()}-{DateTime.Now:yy-MM-dd}.txt");
 
-                var logMssg = $"\r\nMethod: {cmn}\r\nMessage: {mssg}\r\n_______________________________________";
+                message = $"\r\nMethod: {cmn}\r\nMessage: {message}\r\n_______________________________________";
 
                 using var log = new LoggerConfiguration()
-                    .WriteTo.File(path, shared: true, rollOnFileSizeLimit: true, fileSizeLimitBytes: _config.GetValue<int>("Logging:SizeMb") * 1048576)
+                    .WriteTo.File(path, shared: true, rollOnFileSizeLimit: true, fileSizeLimitBytes: config.GetValue<int>("Logging:SizeMb") * 1048576)
                     .CreateLogger();
 
                 switch (logType)
                 {
-                    case var n when n.Equals(LogEventLevel.Information):
-                        log.Information(logMssg);
+                    case LogEventLevel.Information:
+                        log.Information(message);
                         break;
-                    case var n when n.Equals(LogEventLevel.Warning):
-                        log.Warning(logMssg);
+                    case LogEventLevel.Warning:
+                        log.Warning(message);
                         break;
-                    case var n when n.Equals(LogEventLevel.Error):
-                        log.Error(logMssg);
+                    case LogEventLevel.Error:
+                        log.Error(message);
                         break;
-                    case var n when n.Equals(LogEventLevel.Fatal):
-                        log.Fatal(logMssg);
+                    case LogEventLevel.Fatal:
+                        log.Fatal(message);
                         break;
-                    case var n when n.Equals(LogEventLevel.Verbose):
-                        log.Verbose(logMssg);
+                    case LogEventLevel.Verbose:
+                        log.Verbose(message);
                         break;
-                    case var n when n.Equals(LogEventLevel.Debug):
-                        log.Debug(logMssg);
+                    case LogEventLevel.Debug:
+                        log.Debug(message);
                         break;
                     default:
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
-                            var eventLog = new EventLog()
+                            var eventLog = new EventLog
                             {
                                 Source = "CourtProcessing"
                             };
-                            eventLog.WriteEntry(logMssg, EventLogEntryType.Information);
+                            eventLog.WriteEntry(message, EventLogEntryType.Information);
                         }
                         break;
                 }
@@ -62,12 +62,12 @@ namespace CourtProcessing.Data
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    var eventLog = new EventLog()
+                    var eventLog = new EventLog
                     {
                         Source = "CourtProcessing"
                     };
                     eventLog.WriteEntry("Error in: WriteLog.");
-                    eventLog.WriteEntry($"\r\nMethod: {cmn}\r\nMessage: {mssg}\r\n_______________________________________\r\n");
+                    eventLog.WriteEntry($"\r\nMethod: {cmn}\r\nMessage: {message}\r\n_______________________________________\r\n");
                     eventLog.WriteEntry($"Exception encountered in {cmn}. Error: {ex.Message}\r\nDetail: {ex.StackTrace}", EventLogEntryType.Error);
                 }
             }
